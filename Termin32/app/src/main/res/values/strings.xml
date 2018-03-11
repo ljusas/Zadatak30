@@ -88,4 +88,8 @@
     <string name="developer">Dear Developer Name,</string>
     <string name="feedback">Send Feedback:</string>
     <string name="title_activity_detail">DetailActivity</string>
+    <string name="movie_title">Movie title</string>
+    <string name="movie_type">Movie type</string>
+    <string name="movie_year">Movie year</string>
+    <string name="save">Save</string>
 </resources>

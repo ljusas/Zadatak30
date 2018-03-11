@@ -1,5 +1,6 @@
 package ljusas.com.termin32.activities;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -9,6 +10,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +26,7 @@ import java.util.List;
 import ljusas.com.termin32.R;
 import ljusas.com.termin32.db.DatabaseHelper;
 import ljusas.com.termin32.db.model.Actor;
+import ljusas.com.termin32.db.model.Movie;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -54,6 +60,19 @@ public class DetailActivity extends AppCompatActivity {
         RatingBar ratingBar = DetailActivity.this.findViewById(R.id.actor_rating);
         ratingBar.setRating(rating1);
 
+        List<Movie> list = null;
+        try {
+            list = getDatabaseHelper().getMovieDao().queryForAll();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        final ArrayAdapter adapter = new ArrayAdapter<Movie>(this, R.layout.list_item, list);
+
+        final ListView listView = (ListView)this.findViewById(R.id.movie_list);
+
+        listView.setAdapter(adapter);
+
     }
 
 
@@ -69,7 +88,39 @@ public class DetailActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_add_movie) {
-            Toast.makeText(this, "Movie add", Toast.LENGTH_SHORT).show();
+            final Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.input_movie);
+
+            final EditText movieName = (EditText) dialog.findViewById(R.id.movie_title);
+            final EditText movieType = (EditText) dialog.findViewById(R.id.movie_type);
+            final EditText movieYear = (EditText) dialog.findViewById(R.id.movie_year);
+
+            Button ok = (Button) dialog.findViewById(R.id.button_movie_add);
+
+            ok.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String name = movieName.getText().toString();
+                    String type = movieType.getText().toString();
+                    String year = movieYear.getText().toString();
+
+                    Movie movie = new Movie();
+                    movie.setName(name);
+                    movie.setType(type);
+                    movie.setYear(year);
+
+                    try {
+                        getDatabaseHelper().getMovieDao().create(movie);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    refreshMovie();
+                    Toast.makeText(DetailActivity.this, "Movie inserted", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+            });
+
+            dialog.show();
         }
 
         if (id == R.id.action_delete) {
@@ -88,5 +139,27 @@ public class DetailActivity extends AppCompatActivity {
             databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
         }
         return databaseHelper;
+    }
+
+    private void refreshMovie() {
+        ListView listview = (ListView) findViewById(R.id.movie_list);
+
+        if (listview != null){
+            ArrayAdapter<Movie> adapter = (ArrayAdapter<Movie>) listview.getAdapter();
+
+            if(adapter!= null)
+            {
+                try {
+                    adapter.clear();
+                    List<Movie> list = getDatabaseHelper().getMovieDao().queryForAll();
+
+                    adapter.addAll(list);
+
+                    adapter.notifyDataSetChanged();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

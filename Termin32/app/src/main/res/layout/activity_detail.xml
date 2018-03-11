@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/movie"
-    tools:context="ljusas.com.termin32.activities.DetailActivity">
+    tools:context="ljusas.com.termin32.activities.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
