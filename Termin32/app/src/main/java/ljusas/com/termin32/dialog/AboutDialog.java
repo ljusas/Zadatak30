@@ -7,7 +7,6 @@ import android.support.v7.app.AlertDialog;
 
 import ljusas.com.termin32.R;
 
-
 public class AboutDialog extends AlertDialog.Builder{
 
 	public AboutDialog(Context context) {
@@ -22,20 +21,16 @@ public class AboutDialog extends AlertDialog.Builder{
 				dialog.dismiss();
 			}
 		});
-	    
 	    setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 				dialog.cancel();
 			}
 		});
 	}
-	
-	
+
 	public AlertDialog prepareDialog(){
 		AlertDialog dialog = create();
 		dialog.setCanceledOnTouchOutside(false);
-		
 		return dialog;
 	}
-	
 }

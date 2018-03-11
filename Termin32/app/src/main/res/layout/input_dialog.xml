@@ -26,15 +26,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <RatingBar
-        android:id="@+id/actor_rating"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
     <EditText
         android:id="@+id/actor_year"
         android:hint="@string/actor_birth_year"
         android:textSize="20sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RatingBar
+        android:id="@+id/actor_rating"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

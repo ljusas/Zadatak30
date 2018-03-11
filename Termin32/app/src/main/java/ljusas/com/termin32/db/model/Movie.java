@@ -13,6 +13,7 @@ public class Movie {
     public static final String FIELD_NAME_NAME   = "name";
     public static final String FIELD_NAME_TYPE  = "type";
     public static final String FIELD_NAME_YEAR  = "year";
+    public static final String FIELD_NAME_ACTOR = "actor";
 
     @DatabaseField(columnName = FIELD_NAME_ID, generatedId = true)
     private int Id;
@@ -25,6 +26,9 @@ public class Movie {
 
     @DatabaseField(columnName = FIELD_NAME_YEAR)
     private String year;
+
+    @DatabaseField(columnName = FIELD_NAME_ACTOR, foreign = true, foreignAutoRefresh = true)
+    private Actor mActor;
 
     public Movie() {
     }
@@ -59,6 +63,14 @@ public class Movie {
 
     public void setYear(String year) {
         this.year = year;
+    }
+
+    public Actor getmActor() {
+        return mActor;
+    }
+
+    public void setmActor(Actor mActor) {
+        this.mActor = mActor;
     }
 
     @Override

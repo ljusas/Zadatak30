@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.Toast;
@@ -36,10 +37,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -54,39 +55,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        List<Actor> list = null;
+        final ListView listView = findViewById(R.id.list_actors);
+
         try {
-            list = getDatabaseHelper().getActorDao().queryForAll();
+            List<Actor> list = getDatabaseHelper().getActorDao().queryForAll();
+
+            ListAdapter adapter = new ArrayAdapter<>(MainActivity.this, R.layout.list_item, list);
+            listView.setAdapter(adapter);
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Actor ac = (Actor) listView.getItemAtPosition(position);
+
+                    Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                    intent.putExtra("actorID", ac.getmId());
+                    startActivity(intent);
+                }
+            });
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        final ArrayAdapter adapter = new ArrayAdapter<Actor>(this, R.layout.list_item, list);
-
-        final ListView listView = (ListView)this.findViewById(R.id.list_actors);
-
-        listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Actor ac = (Actor) listView.getItemAtPosition(position);
-                String name = ac.getmName();
-                String sername = ac.getmSername();
-                String cv = ac.getCv();
-                String year = ac.getYear();
-                Float ratingBar = ac.getRating();
-
-                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                intent.putExtra("name", name);
-                intent.putExtra("sername", sername);
-                intent.putExtra("cv", cv);
-                intent.putExtra("year", year);
-                intent.putExtra("rating", ratingBar);
-                startActivity(intent);
-
-            }
-        });
     }
 
     @Override
@@ -115,13 +104,13 @@ public class MainActivity extends AppCompatActivity {
             final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.input_dialog);
 
-            final EditText actorName = (EditText) dialog.findViewById(R.id.actor_name);
-            final EditText actorSername = (EditText) dialog.findViewById(R.id.actor_sername);
-            final EditText actorCV = (EditText) dialog.findViewById(R.id.actor_cv);
-            final RatingBar ratingBar = (RatingBar) dialog.findViewById(R.id.actor_rating);
-            final EditText actorYear = (EditText) dialog.findViewById(R.id.actor_year);
+            final EditText actorName = dialog.findViewById(R.id.actor_name);
+            final EditText actorSername = dialog.findViewById(R.id.actor_sername);
+            final EditText actorCV = dialog.findViewById(R.id.actor_cv);
+            final RatingBar ratingBar = dialog.findViewById(R.id.actor_rating);
+            final EditText actorYear = dialog.findViewById(R.id.actor_year);
 
-            Button ok = (Button) dialog.findViewById(R.id.button_actor_add);
+            Button ok = dialog.findViewById(R.id.button_actor_add);
             ok.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -140,13 +129,14 @@ public class MainActivity extends AppCompatActivity {
 
                     try {
                         getDatabaseHelper().getActorDao().create(actor);
+                        refresh();
+
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    refresh();
+
                     Toast.makeText(MainActivity.this, "Actor inserted", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
-
                 }
             });
 
@@ -156,21 +146,23 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refresh();
+    }
 
     private void refresh() {
-        ListView listview = (ListView) findViewById(R.id.list_actors);
+        ListView listview = findViewById(R.id.list_actors);
 
         if (listview != null){
             ArrayAdapter<Actor> adapter = (ArrayAdapter<Actor>) listview.getAdapter();
-
             if(adapter!= null)
             {
                 try {
                     adapter.clear();
                     List<Actor> list = getDatabaseHelper().getActorDao().queryForAll();
-
                     adapter.addAll(list);
-
                     adapter.notifyDataSetChanged();
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -184,5 +176,14 @@ public class MainActivity extends AppCompatActivity {
             databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
         }
         return databaseHelper;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
+        }
     }
 }

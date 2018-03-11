@@ -1,18 +1,17 @@
 package ljusas.com.termin32.activities;
 
 import android.app.Dialog;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -31,47 +30,60 @@ import ljusas.com.termin32.db.model.Movie;
 public class DetailActivity extends AppCompatActivity {
 
     private DatabaseHelper databaseHelper;
+    private Actor a;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        String name = getIntent().getStringExtra("name");
-        String sername = getIntent().getStringExtra("sername");
-        String cv = getIntent().getStringExtra("cv");
-        String year = getIntent().getStringExtra("year");
-        Float rating1 = getIntent().getFloatExtra("rating", 0);
+        int actorID = getIntent().getExtras().getInt("actorID");
 
-        TextView name1 = DetailActivity.this.findViewById(R.id.tv_name);
-        name1.setText(String.format("Name: %s", name));
-
-        TextView sername1 = DetailActivity.this.findViewById(R.id.tv_sername);
-        sername1.setText(String.format("Sername: %s", sername));
-
-        TextView cv1 = DetailActivity.this.findViewById(R.id.tv_cv);
-        cv1.setText(String.format("CV: %s", cv));
-
-        TextView year1 = DetailActivity.this.findViewById(R.id.tv_year);
-        year1.setText(String.format("Name: %s", year));
-
-        RatingBar ratingBar = DetailActivity.this.findViewById(R.id.actor_rating);
-        ratingBar.setRating(rating1);
-
-        List<Movie> list = null;
         try {
-            list = getDatabaseHelper().getMovieDao().queryForAll();
+            a = getDatabaseHelper().getActorDao().queryForId(actorID);
+
+            TextView name1 = findViewById(R.id.tv_name);
+            name1.setText(a.getmName());
+
+            TextView sername1 = findViewById(R.id.tv_sername);
+            sername1.setText(a.getmSername());
+
+            TextView cv1 = findViewById(R.id.tv_cv);
+            cv1.setText(a.getCv());
+
+            TextView year1 = findViewById(R.id.tv_year);
+            year1.setText(a.getYear());
+
+            RatingBar ratingBar = findViewById(R.id.actor_rating);
+            ratingBar.setRating(a.getRating());
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        final ArrayAdapter adapter = new ArrayAdapter<Movie>(this, R.layout.list_item, list);
+        final ListView listView = findViewById(R.id.movie_list);
+        try {
+            List<Movie> list = getDatabaseHelper().getMovieDao().queryBuilder()
+                    .where()
+                    .eq(Movie.FIELD_NAME_ACTOR, a.getmId())
+                    .query();
 
-        final ListView listView = (ListView)this.findViewById(R.id.movie_list);
+            ListAdapter adapter = new ArrayAdapter<>(this, R.layout.list_item, list);
+            listView.setAdapter(adapter);
 
-        listView.setAdapter(adapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Movie m = (Movie) listView.getItemAtPosition(position);
+                    Toast.makeText(DetailActivity.this, m.getName()+" "+m.getType()+" "+m.getYear(), Toast.LENGTH_SHORT).show();
+
+                }
+            });
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -91,11 +103,11 @@ public class DetailActivity extends AppCompatActivity {
             final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.input_movie);
 
-            final EditText movieName = (EditText) dialog.findViewById(R.id.movie_title);
-            final EditText movieType = (EditText) dialog.findViewById(R.id.movie_type);
-            final EditText movieYear = (EditText) dialog.findViewById(R.id.movie_year);
+            final EditText movieName = dialog.findViewById(R.id.movie_title);
+            final EditText movieType = dialog.findViewById(R.id.movie_type);
+            final EditText movieYear = dialog.findViewById(R.id.movie_year);
 
-            Button ok = (Button) dialog.findViewById(R.id.button_movie_add);
+            Button ok = dialog.findViewById(R.id.button_movie_add);
 
             ok.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -108,13 +120,14 @@ public class DetailActivity extends AppCompatActivity {
                     movie.setName(name);
                     movie.setType(type);
                     movie.setYear(year);
+                    movie.setmActor(a);
 
                     try {
                         getDatabaseHelper().getMovieDao().create(movie);
+                        refreshMovie();
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    refreshMovie();
                     Toast.makeText(DetailActivity.this, "Movie inserted", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 }
@@ -124,13 +137,55 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_delete) {
-            Toast.makeText(this, "Actor deleted", Toast.LENGTH_SHORT).show();
+
+            try {
+                getDatabaseHelper().getActorDao().delete(a);
+                Toast.makeText(this, "Actor deleted", Toast.LENGTH_SHORT).show();
+                finish();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         if (id == R.id.action_edit) {
-            Toast.makeText(this, "Actor edited", Toast.LENGTH_SHORT).show();
-        }
+            final Dialog dialog1 = new Dialog(this);
+            dialog1.setContentView(R.layout.input_dialog);
 
+            final EditText actorName = dialog1.findViewById(R.id.actor_name);
+            final EditText actorSername = dialog1.findViewById(R.id.actor_sername);
+            final EditText actorCV = dialog1.findViewById(R.id.actor_cv);
+            final RatingBar ratingBar = dialog1.findViewById(R.id.actor_rating);
+            final EditText actorYear = dialog1.findViewById(R.id.actor_year);
+
+            Button ok = dialog1.findViewById(R.id.button_actor_add);
+            ok.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String name = actorName.getText().toString();
+                    String sername = actorSername.getText().toString();
+                    String cv = actorCV.getText().toString();
+                    float rating = ratingBar.getRating();
+                    String year = actorYear.getText().toString();
+
+                    a.setmName(name);
+                    a.setmSername(sername);
+                    a.setCv(cv);
+                    a.setRating(rating);
+                    a.setYear(year);
+
+                    try {
+                        getDatabaseHelper().getActorDao().update(a);
+                        finish();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(DetailActivity.this, "Actor edited", Toast.LENGTH_SHORT).show();
+                    dialog1.dismiss();
+                }
+            });
+            dialog1.show();
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -142,7 +197,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void refreshMovie() {
-        ListView listview = (ListView) findViewById(R.id.movie_list);
+        ListView listview = findViewById(R.id.movie_list);
 
         if (listview != null){
             ArrayAdapter<Movie> adapter = (ArrayAdapter<Movie>) listview.getAdapter();
@@ -151,15 +206,26 @@ public class DetailActivity extends AppCompatActivity {
             {
                 try {
                     adapter.clear();
-                    List<Movie> list = getDatabaseHelper().getMovieDao().queryForAll();
+                    List<Movie> list = getDatabaseHelper().getMovieDao().queryBuilder()
+                            .where()
+                            .eq(Movie.FIELD_NAME_ACTOR, a.getmId())
+                            .query();
 
                     adapter.addAll(list);
-
                     adapter.notifyDataSetChanged();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
         }
     }
 }

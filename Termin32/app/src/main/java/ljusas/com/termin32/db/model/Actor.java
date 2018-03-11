@@ -1,7 +1,9 @@
 package ljusas.com.termin32.db.model;
 
 
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = Actor.TABLE_NAME_USERS)
@@ -35,8 +37,8 @@ public class Actor {
     @DatabaseField(columnName = FIELD_NAME_YEAR)
     private String year;
 
-    @DatabaseField(columnName = FIELD_NAME_MOVIE, foreign = true, foreignAutoCreate = true,foreignAutoRefresh = true)
-    private Movie movie;
+    @ForeignCollectionField(columnName = Actor.FIELD_NAME_MOVIE, eager = true)
+    private ForeignCollection<Movie> movies;
 
     public Actor() {
     }
@@ -89,12 +91,12 @@ public class Actor {
         this.year = year;
     }
 
-    public Movie getMovie() {
-        return movie;
+    public ForeignCollection<Movie> getMovies() {
+        return movies;
     }
 
-    public void setMovie(Movie movie) {
-        this.movie = movie;
+    public void setMovies(ForeignCollection<Movie> movies) {
+        this.movies = movies;
     }
 
     @Override
