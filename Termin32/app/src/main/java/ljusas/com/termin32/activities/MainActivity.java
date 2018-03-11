@@ -32,13 +32,6 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseHelper databaseHelper;
 
-    public interface OnItemSelectedListener {
-
-        void onItemSelected(int position);
-    }
-
-    OnItemSelectedListener listener;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        ArrayAdapter adapter = new ArrayAdapter<Actor>(this, R.layout.list_item, list);
+        final ArrayAdapter adapter = new ArrayAdapter<Actor>(this, R.layout.list_item, list);
 
         final ListView listView = (ListView)this.findViewById(R.id.list_actors);
 
@@ -78,12 +71,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Actor ac = (Actor) listView.getItemAtPosition(position);
-                String posID = String.valueOf(ac.getmId());
+                String name = ac.getmName();
+                String sername = ac.getmSername();
+                String cv = ac.getCv();
+                String year = ac.getYear();
+                Float ratingBar = ac.getRating();
 
                 Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                intent.putExtra("position", posID);
+                intent.putExtra("name", name);
+                intent.putExtra("sername", sername);
+                intent.putExtra("cv", cv);
+                intent.putExtra("year", year);
+                intent.putExtra("rating", ratingBar);
                 startActivity(intent);
-
 
             }
         });

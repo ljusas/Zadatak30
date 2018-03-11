@@ -33,41 +33,29 @@ public class DetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final String dataID = getIntent().getStringExtra("position");
-        showDetail(dataID);
+        String name = getIntent().getStringExtra("name");
+        String sername = getIntent().getStringExtra("sername");
+        String cv = getIntent().getStringExtra("cv");
+        String year = getIntent().getStringExtra("year");
+        Float rating1 = getIntent().getFloatExtra("rating", 0);
+
+        TextView name1 = DetailActivity.this.findViewById(R.id.tv_name);
+        name1.setText(String.format("Name: %s", name));
+
+        TextView sername1 = DetailActivity.this.findViewById(R.id.tv_sername);
+        sername1.setText(String.format("Sername: %s", sername));
+
+        TextView cv1 = DetailActivity.this.findViewById(R.id.tv_cv);
+        cv1.setText(String.format("CV: %s", cv));
+
+        TextView year1 = DetailActivity.this.findViewById(R.id.tv_year);
+        year1.setText(String.format("Name: %s", year));
+
+        RatingBar ratingBar = DetailActivity.this.findViewById(R.id.actor_rating);
+        ratingBar.setRating(rating1);
 
     }
 
-    private void showDetail(String dataID) {
-
-        List<Actor> list = null;
-        try {
-            list = getDatabaseHelper().getActorDao().queryForAll();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        for (int i = 0; i < list.size(); i++){
-            if (dataID.equals(list.get(i).getmId())) {
-
-                TextView name = DetailActivity.this.findViewById(R.id.tv_name);
-                name.setText(String.format("Name: %s", list.get(i).getmName()));
-
-                TextView sername = DetailActivity.this.findViewById(R.id.tv_sername);
-                sername.setText(String.format("Sername: %s", list.get(i).getmSername()));
-
-                TextView cv = DetailActivity.this.findViewById(R.id.tv_cv);
-                cv.setText(String.format("CV: %s", list.get(i).getCv()));
-
-                TextView year = DetailActivity.this.findViewById(R.id.tv_year);
-                year.setText(String.format("Name: %s", list.get(i).getYear()));
-
-                RatingBar ratingBar = DetailActivity.this.findViewById(R.id.actor_rating);
-                ratingBar.setRating(list.get(i).getRating());
-
-            }
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
