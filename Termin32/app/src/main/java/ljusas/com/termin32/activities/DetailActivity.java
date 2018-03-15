@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
@@ -149,6 +150,15 @@ public class DetailActivity extends AppCompatActivity {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+
+            NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+            Context context = getApplicationContext();
+            android.support.v4.app.NotificationCompat.Builder builder = new android.support.v4.app.NotificationCompat.Builder(context);
+            builder.setContentTitle("Obaveštenje");
+            builder.setContentText("Upravo ste obrisali kontakt.");
+            builder.setSmallIcon(R.drawable.ic_stat_name);
+            builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+            manager.notify(1,builder.build());
         }
 
         if (id == R.id.action_edit) {
